@@ -1,0 +1,413 @@
+<%- include ("includes/header", {
+   "title": "Uploads"
+}) %>
+
+<div class="container" style="margin-top: 50px; margin-bottom: 50px;">
+    <%- include ("includes/ResponseAlert", {
+        "request": request
+    }) %>
+
+    <div class="row">
+        <div class="col-md-4">
+            <h1>
+                    Uploads
+            </h1>
+        </div>
+
+        <% if (createdAt != "") { %>
+            <div class="col-md-4">
+                Created at:
+                <%
+                    createdAt = new Date(createdAt);
+                    createdAt = createdAt.getDate() + " " + months[createdAt.getMonth()] + ", " + createdAt.getFullYear() + " " + createdAt.getHours() + ":" + createdAt.getMinutes() + ":" + createdAt.getSeconds();
+                %>
+
+                <%= createdAt %>
+            </div>
+        <% } %>                                                                          
+    </div>
+
+    <div class="row">
+        <%
+            uploaded.forEach(function (singleFile) {
+
+                var fileSize = 0;
+        %>
+            <div class="col-md-4" style="margin-top: 30px;">
+
+                <div class="card">
+                    <div class="card-body" style="font-size: 100px; text-align: center; height: 200px;">
+                            <i class="fa fa-file-text-o"></i>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-8">
+                                    fileSize = formatBytes(singleFile.size);
+                                    <h3>
+                                        <a href="javascript:void(0);"
+                                            onclick="viewFile(this);"
+                                            data-id="<%= singleFile._id %>"
+                                            data-name="<%= singleFile.name %>"
+                                            data-type="<%= singleFile.type %>"
+                                            data-created-at="<%= singleFile.createdAt %>">
+                                            <%= singleFile.name.substring(0, 10) %>
+
+                                            <%= (singleFile.name.length > 10) ? "..." : "" %>
+                                        </a>
+                                    </h3>
+                            </div>
+
+                            <div class="col-md-4">
+                                <p style="position: relative; top: 10px;"><%= fileSize %></p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+
+</div>
+
+<form method="POST" action="/UploadFile" enctype="multipart/form-data" id="form-upload-file">
+    <input type="hidden" name="_id" value="<%= _id %>" />
+    <input type="hidden" name="compression" value="100" />
+    <input type="file" name="file" id="input-file-upload" style="display: none;" onchange="confirmUpload();" required />
+</form>
+
+<!-- Modal -->
+<div class="modal fade" id="viewFileModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+                <button type="button" class="btn btn-primary" onclick="showShareModal(this);"
+                    data-dismiss="modal"
+                    data-id=""
+                    data-type=""
+                    id="button-share-file">
+                    Share
+                </button>
+
+                <button type="button" class="btn btn-info" onclick="showSharedWithModal(this);"
+                    data-dismiss="modal"
+                    data-id=""
+                    id="button-shared-with">
+                    Shared with
+                </button>
+
+                <form method="POST" action="/DeleteFile"
+                    id="form-delete-file">
+                    <input type="hidden" name="_id" required />
+
+                    <button type="button" class="btn btn-danger"
+                        onclick="confirmDeleteFile(this);">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="shareModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Share with</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form method="POST" action="/Share" id="form-share-modal">
+                    <input type="hidden" name="_id" required />
+                    <input type="hidden" name="type" required />
+
+                    <div class="form-group">
+                        <label>Enter email</label>
+                        <input type="email" name="email" class="form-control" required />
+
+                        <button type="button" class="btn btn-default"
+                            onclick="searchUserForShare(this);"
+                            style="margin-top: 10px;">
+                            Confirm user
+                        </button>
+                    </div>
+
+                    <div id="user-details-for-share"></div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    Close
+                </button>
+
+                <input type="submit" class="btn btn-primary" value="Share" form="form-share-modal" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sharedWithModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Shared with</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p class="loading"></p>
+                <h3 class="filename"></h3>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User name</th>
+                            <th>Email</th>
+                            <th>Shared at</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function showSharedWithModal(self) {
+        const _id = self.getAttribute("data-id");
+        $("#sharedWithModal").modal("show");
+
+        document.querySelector("#sharedWithModal .loading").innerHTML = "Loading...";
+
+        var ajax = new XMLHttpRequest();
+        ajax.open("POST", document.getElementById("base-url").value + "/GetFileSharedWith", true);
+
+        ajax.onreadystatechange = function () {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    // console.log(this.responseText);
+                    var data = JSON.parse(this.responseText);
+                    // console.log(data.users[0]);
+
+                    document.querySelector("#sharedWithModal .loading").innerHTML = "";
+
+                    if (data.status == "error") {
+                        swal("Error", data.message, "error");
+                    }
+
+                    if (data.status == "success") {
+                        var html = "";
+                        for (var a = 0; a < data.users.length; a++) {
+                            const user = data.users[a];
+
+                            var sharedAt = user.sharedObj.sharedAt;
+                            sharedAt = new Date(sharedAt);
+                            sharedAt = sharedAt.getDate() + " " + months[sharedAt.getMonth()] + ", " + sharedAt.getFullYear() + "<br />" + sharedAt.getHours() + ":" + sharedAt.getMinutes() + ":" + sharedAt.getSeconds();
+
+                            html += `<tr>
+                                <td>` + user.name + `</td>
+                                <td>` + user.email + `</td>
+                                <td>` + sharedAt + `</td>
+                                <td>
+                                    <form method="POST" action="` + document.getElementById("base-url").value + `/RemoveSharedAccess" onsubmit="return confirm('Are you sure you want to remove this shared access ?');">
+                                        <input type="hidden" name="_id" value="` + user.sharedObj._id + `" />
+                                        <input type="submit" class="btn btn-danger" value="Remove Access" />
+                                    </form>
+                                </td>
+                            </tr>`;
+                        }
+                        document.querySelector("#sharedWithModal .modal-body tbody").innerHTML = html;
+                    }
+                }
+
+                if (this.status == 500) {
+                    console.log(this.responseText);
+                }
+            }
+        };
+
+        var formData = new FormData();
+        formData.append("_id", _id);
+        ajax.send(formData);
+    }
+
+    function searchUserForShare(self) {
+        self.innerHTML = "Loading...";
+        self.setAttribute("disabled", "disabled");
+
+        var ajax = new XMLHttpRequest();
+        ajax.open("POST", document.getElementById("base-url").value + "/GetUser", true);
+
+        ajax.onreadystatechange = function () {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    var data = JSON.parse(this.responseText);
+
+                    self.removeAttribute("disabled");
+                    self.innerHTML = "Confirm user";
+
+                    if (data.status == "error") {
+                        swal("Error", data.message, "error");
+                    }
+
+                    if (data.status == "success") {
+                        var html = "";
+                        html += "<p>Name: " + data.user.name + "</p>";
+                        document.getElementById("user-details-for-share").innerHTML = html;
+                    }
+                }
+
+                if (this.status == 500) {
+                    console.log(this.responseText);
+                }
+            }
+        };
+
+        var form = document.getElementById("form-share-modal");
+        var formData = new FormData(form);
+        ajax.send(formData);
+    }
+
+    function showShareModal(self) {
+        document.getElementById("form-share-modal")._id.value = self.getAttribute("data-id");
+        document.getElementById("form-share-modal").type.value = self.getAttribute("data-type");
+        $("#shareModal").modal("show");
+    }
+
+    function selectFileForUpload() {
+        document.getElementById("input-file-upload").click();
+    }
+
+    function confirmUpload() {
+
+        const input = event.target;
+        if (input.files.length == 0) {
+            return false;
+        }
+        const type = input.files[0].type;
+
+        swal({
+            title: "Are you sure?",
+            text: "Upload the selected file to the server ?",
+            icon: "warning",
+            buttons: true,
+        })
+        .then(function (isOkay){
+            if (isOkay) {
+
+                if (type == "image/png" || type == "image/jpeg") {
+                    swal({
+                        title: "Compress Image ?",
+                        text: "Enter the value between 0 to 100 (100 is the original quality).",
+                        content: "input",
+                        button: {
+                            text: "Upload",
+                            closeModal: false,
+                        },
+                    })
+                    .then(function(compression) {
+                        if (compression) {
+                            document.getElementById("form-upload-file").compression.value = compression;
+                        }
+
+                        swal.close();
+                        document.getElementById("form-upload-file").submit();
+                    });
+                } else {
+                    document.getElementById("form-upload-file").submit();
+                }
+            }
+        });
+    }
+
+    function viewFile(self) {
+        var _id = self.getAttribute("data-id");
+        var name = self.getAttribute("data-name");
+        var type = self.getAttribute("data-type");
+
+        var createdAt = self.getAttribute("data-created-at");
+        createdAt = parseFloat(createdAt);
+        createdAt = new Date(createdAt);
+        createdAt = createdAt.getDate() + " " + months[createdAt.getMonth()] + ", " + createdAt.getFullYear() + " " + createdAt.getHours() + ":" + createdAt.getMinutes() + ":" + createdAt.getSeconds();
+
+        document.querySelector("#viewFileModal .modal-title").innerHTML = name;
+
+        var modalBodyHtml = "";
+        modalBodyHtml += "<p>Created at: " + createdAt + "</p>";
+        modalBodyHtml += "<button type='button' class='btn btn-success' onclick='downloadFile(this);' data-id='" + _id + "' id='btn-download-file'>Download</button>";
+        document.querySelector("#viewFileModal .modal-body").innerHTML = modalBodyHtml;
+
+        $("#viewFileModal").modal("show");
+
+        document.getElementById("button-share-file").setAttribute("data-id", _id);
+        document.getElementById("button-share-file").setAttribute("data-type", type);
+        document.getElementById("form-delete-file")._id.value = _id;
+        document.getElementById("button-shared-with").setAttribute("data-id", _id);
+    }
+
+    // send the request to server to download the file
+    function downloadFile(self) {
+        var _id = self.getAttribute("data-id");
+
+        self.innerHTML = "Loading...";
+        self.setAttribute("disabled", "disabled");
+
+        var ajax = new XMLHttpRequest();
+        ajax.open("POST", document.getElementById("base-url").value + "/DownloadFile", true);
+
+        ajax.onreadystatechange = function () {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    var data = JSON.parse(this.responseText);
+
+                    if (data.status == "error") {
+                        swal("Error", data.message, "error");
+                    }
+
+                    if (data.status == "success") {
+
+                    }
+                }
+
+                if (this.status == 500) {
+                    console.log(this.responseText);
+                }
+            }
+        };
+
+        var formData = new FormData();
+        formData.append("_id", _id);
+        ajax.send(formData);
+    }
+</script>
+
+<%- include ("includes/footer") %>

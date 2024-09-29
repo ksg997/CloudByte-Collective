@@ -1,0 +1,129 @@
+        <!-- include necessary JS files -->
+        <script src="/public/js/jquery-3.3.1.min.js"></script>
+        <script src="/public/js/popper.min.js"></script>
+        <script src="/public/js/bootstrap.min.js"></script>
+        <script src="/public/js/sweetalert.min.js"></script>
+        <script src="/public/js/pdfobject.min.js"></script>
+        <script src="/public/js/socket.io.js"></script>
+        <!-- include Stripe library -->
+        <script src="https://js.stripe.com/v3/"></script>
+
+        <!-- Load the required checkout.js script -->
+        <script src="https://www.paypalobjects.com/api/checkout.js" data-version-4></script>
+
+        <!-- Load the required Braintree components. -->
+        <script src="https://js.braintreegateway.com/web/3.39.0/js/client.min.js"></script>
+        <script src="https://js.braintreegateway.com/web/3.39.0/js/paypal-checkout.min.js"></script>
+
+        <% if (request.isLogin) { %>
+            <script>
+                var downloadChunks = [];
+                var socketIO = io(baseUrl);
+                
+                socketIO.on("download_chunk_received", function (data) {
+                    downloadChunks.push(data);
+                });
+
+                var _appendBuffer = function(buffer1, buffer2) {
+                  var tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
+                  tmp.set(new Uint8Array(buffer1), 0);
+                  tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
+                  return tmp.buffer;
+                };
+
+                socketIO.on("download_completed", function (data) {
+                    var button = document.getElementById("btn-download-file");
+                    if (button != null) {
+                        button.removeAttribute("disabled");
+                        button.innerHTML = "Download";
+                    }
+
+                    // console.log(downloadChunks);
+                    var arrayBuffer = new ArrayBuffer(0);
+                    for (var a = 0; a < downloadChunks.length; a++) {
+                        arrayBuffer = _appendBuffer(arrayBuffer, downloadChunks[a]);
+                    }
+                    // console.log(arrayBuffer);
+
+                    var binary = '';
+                    var bytes = new Uint8Array( arrayBuffer );
+                    var len = bytes.byteLength;
+                    for (var i = 0; i < len; i++) {
+                        binary += String.fromCharCode( bytes[ i ] );
+                    }
+                    var base64 = window.btoa( binary );
+                    
+                    // var base64 = data.base64str;
+                    base64 = "data:" + data.fileType + ";base64," + base64;
+                    // console.log(base64);
+
+                    // download the file
+                    const fileName = data.fileName;
+                    const link = document.createElement('a');
+                    // Browsers that support HTML5 download attribute
+                    if (link.download !== undefined) {
+                        link.setAttribute("href", base64);
+                        link.setAttribute('download', fileName);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+
+                    downloadChunks = [];
+                });
+
+                socketIO.emit("logged_in", "<%= request.session.user._id %>");
+            </script>
+        <% } %>
+
+        <script>
+
+            function confirmDeleteFile(form) {
+                swal({
+                    title: "Are you sure?",
+                    text: "Once deleted, it can be recovered from trash can.",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                .then(function(willDelete) {
+                    if (willDelete) {
+                        document.getElementById("form-delete-file").submit();
+                    }
+                });
+            }
+
+            function confirmForceDeleteFile(form) {
+                swal({
+                    title: "Are you sure?",
+                    text: "It will be deleted permanently.",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                .then(function(willDelete) {
+                    if (willDelete) {
+                        document.getElementById("form-force-delete-file").submit();
+                    }
+                });
+            }
+
+            function confirmRecoverFile(form) {
+                swal({
+                    title: "Are you sure?",
+                    text: "This file will be recovered to the root directory.",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                .then(function(willDelete) {
+                    if (willDelete) {
+                        document.getElementById("form-recover-file").submit();
+                    }
+                });
+            }
+        </script>
+
+    </body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - User Management</title>
+    <link rel="stylesheet" href="/public/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/font-awesome-4.7.0/css/font-awesome.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container mt-3">
+        <h2 class="mt-5">User Management</h2>
+
+        <!-- Search Form -->
+        <form id="searchForm" class="form-inline mb-3" method="GET" action="/admin/searchUsers">
+            <input type="text" class="form-control mr-2" id="searchQuery" name="query" placeholder="Search by name or email" value="<%= typeof query !== 'undefined' ? query : '' %>">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Registration Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (users && users.length > 0) { %>
+                    <% users.forEach(function(user) { %>
+                        <tr>
+                            <td><%= user.name %></td>
+                            <td><%= user.email %></td>
+                            <td><%= new Date(user.registrationDate).toLocaleString() %></td>
+                            <td>
+                                <button class="btn btn-primary edit-btn" data-id="<%= user._id %>" data-name="<%= user.name %>" data-email="<%= user.email %>">Edit</button>
+                                <button class="btn btn-danger delete-btn" data-id="<%= user._id %>">Delete</button>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="5">No users found.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+
+        <a href="/adminDashboard" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+
+    <!-- Modal for editing user information -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId" name="userId" />
+                        <div class="form-group">
+                            <label for="editUserName">Name</label>
+                            <input type="text" class="form-control" id="editUserName" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editUserEmail">Email</label>
+                            <input type="email" class="form-control" id="editUserEmail" name="email" required>
+                        </div>
+                        <!--<div class="form-group">
+                            <label for="editUserPassword">Password</label>
+                            <input type="password" class="form-control" id="editUserPassword" name="password">
+                        </div>-->
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+    // Function to bind event handlers for edit and delete buttons
+    function bindUserActionButtons() {
+        // Handle Edit button click
+        $('.edit-btn').off('click').on('click', function () {
+            var userId = $(this).data('id');
+            var userName = $(this).data('name');
+            var userEmail = $(this).data('email');
+
+            // Set the form values
+            $('#editUserId').val(userId);
+            $('#editUserName').val(userName);
+            $('#editUserEmail').val(userEmail);
+
+            // Show the modal
+            $('#editUserModal').modal('show');
+        });
+
+        // Handle form submission for editing user
+        $('#editUserForm').off('submit').on('submit', function (event) {
+            event.preventDefault();
+
+            var formData = $(this).serialize();
+            console.log("Form Data:", formData);
+
+            $.ajax({
+                url: '<%= mainURL %>/admin/updateUser',
+                method: 'POST',
+                data: formData,
+                success: function (response) {
+                    alert('User updated successfully');
+                    location.reload();
+                },
+                error: function (error) {
+                    alert("Error: " + error.responseText);
+                }
+            });
+        });
+
+        // Handle delete user button
+        $('.delete-btn').off('click').on('click', function () {
+            if (confirm("Are you sure you want to delete this user?")) {
+                var userId = $(this).data('id');
+                $.post('<%= mainURL %>/admin/deleteUser', { userId: userId }, function (response) {
+                    alert(response);
+                    location.reload();
+                }).fail(function (error) {
+                    alert("Error: " + error.responseText);
+                });
+            }
+        });
+    }
+
+    // Bind event handlers when the page loads
+    bindUserActionButtons();
+
+    // Handle search form submission with AJAX
+    $('#searchForm').submit(function (event) {
+        event.preventDefault();
+
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'GET',
+            data: $(this).serialize(),
+            success: function (response) {
+                $('tbody').html($(response).find('tbody').html()); // Update the table body with new search results
+                bindUserActionButtons(); // Re-bind event handlers after updating the table
+            },
+            error: function (error) {
+                alert("Error: " + error.responseText);
+            }
+        });
+    });
+});
+
+        $(document).ready(function() {
+            // Handle Edit button click
+            $('.edit-btn').click(function() {
+                var userId = $(this).data('id');
+                var userName = $(this).data('name');
+                var userEmail = $(this).data('email');
+        
+                // Set the form values
+                $('#editUserId').val(userId);
+                $('#editUserName').val(userName);
+                $('#editUserEmail').val(userEmail);
+        
+                // Show the modal
+                $('#editUserModal').modal('show');
+            });
+
+            // Handle form submission for editing user
+            $('#editUserForm').submit(function(event) {
+                event.preventDefault();
+                
+                var formData = $(this).serialize();
+                console.log("Form Data:", formData);
+
+                $.ajax({
+                    url: '/admin/updateUser',
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        alert('User updated successfully');
+                        location.reload();
+                    },
+                    error: function(error) {
+                        alert("Error: " + error.responseText);
+                    }
+                });
+            });
+            
+            // Handle delete user button
+            $('.delete-btn').click(function() {
+                if (confirm("Are you sure you want to delete this user?")) {
+                    var userId = $(this).data('id');
+                    $.post('/admin/deleteUser', { userId: userId }, function(response) {
+                        alert(response);
+                        location.reload();
+                    }).fail(function(error) {
+                        alert("Error: " + error.responseText);
+                    });
+                }
+            });
+            
+            // Handle search form submission with AJAX
+            $('#searchForm').submit(function(event) {
+                event.preventDefault();
+                
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'GET',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('tbody').html($(response).find('tbody').html()); // Update the table body with new search results
+                    },
+                    error: function(error) {
+                        alert("Error: " + error.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

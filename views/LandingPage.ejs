@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudByte - Secure File Sharing and Recovery</title>
+    <link rel="stylesheet" href="/public/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/public/font-awesome-4.7.0/css/font-awesome.min.css" />
+    <script>
+        // Script to reset the page to the top on reload
+        window.onbeforeunload = function () {
+            window.scrollTo(0, 0);
+        };
+        // Override Ctrl+R and reload button
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'r') {
+                event.preventDefault(); // Prevent the default reload action
+                window.location.href = "#landing-header"; // Redirect to the desired section
+            }
+        });
+    </script>
+</head>
+<body class="landing-body">
+
+    <!-- Header -->
+    <header class="landing-header">
+        <div class="landing-container" id="landing-header">
+            <div class="landing-logo">
+                <h1>CloudByte</h1>
+                <p>Secure File Sharing and Recovery</p>
+            </div>
+            <nav class="landing-nav">
+                <a class="nav-link" href="/Login">Login</a>
+                <a class="nav-link" href="/Register">Subscribe</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="landing-hero">
+        <div class="landing-container landing-hero-content">
+            <div class="landing-text-content">
+                <h2>Connect,<br>Share,<br>Secure.</h2>
+                <a href="#landing-features-section" class="landing-cta-button">Features You'll Love</a>
+            </div>
+            <div class="landing-image-content">
+                <img src="/img/files.jpg" alt="Files" width="550" height="400">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="landing-features-section" class="landing-features">
+        <div class="landing-container landing-features-grid">
+            <div class="landing-feature-item">
+                <img src="/img/e2e.jpg" alt="Encryption" width="250" height="250">
+                <h3>End-to-End Encryption</h3>
+                <p>It is crucial to us that your files are protected both in transit and at rest, ensuring that only authorized users can decrypt and access the data.</p>
+            </div>
+            <div class="landing-feature-item">
+                <img src="/img/ac.png" alt="Access Controls" width="250" height="250">
+                <h3>Access Controls</h3>
+                <p>Implement controls to manage who can view or download files to maintain essential data integrity and security.</p>
+            </div>
+            <div class="landing-feature-item">
+                <img src="/img/2fa.jpg" alt="Two-Factor Authentication" width="250" height="250">
+                <h3>Two-Factor Authentication</h3>
+                <p>This will add an extra layer of security by requiring you to provide two or more verification factors to register your account, protecting against unauthorized registration.</p>
+            </div>
+            <div class="landing-feature-item">
+                <img src="/img/dr.jpg" alt="Data Recovery" width="250" height="250">
+                <h3>Data Recovery</h3>
+                <p>In case of accidental deletion of files, our robust backup and recovery procedures will ensure that you can find them again securely.</p>
+            </div>
+        </div>
+    </section>
+    <section class="landing-promotion">
+        <div class="landing-promotion-left">
+            <h2 class="landing-promotion-title">Secure your files and share them anytime, anywhere.</h2>
+            <img src="/img/woman_laptop.jpg" alt="Promotion Image" class="landing-promotion-image" width="300" height="200">
+        </div>
+        <div class="landing-promotion-right">
+            <div class="landing-promotion-box">
+                <h3 class="landing-promotion-subtitle">Many Benefits Include</h3>
+                <ul class="landing-promotion-list">
+                    <li>&#8226; Enhanced Security</li>
+                    <li>&#8226; Smooth File Recovery</li>
+                    <li>&#8226; File Encryption</li>
+                    <li>&#8226; 2FA Included</li>
+                </ul>
+                <p class="landing-promotion-price">One-Time Purchase <br> SGD 15.00</p>
+                <a href="/Register" class="landing-promotion-btn">SUBSCRIBE NOW!</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="landing-testimonials">
+        <h2 class="landing-testimonials-title">Our platform is tried and trusted by 200,000 users all around the world.</h2>
+        <div class="landing-testimonials-cards">
+            <div class="landing-testimonial-card">
+                <p class="landing-testimonial-text">"After switching to CloudByte, our team has seen a remarkable improvement in our workflow. The end-to-end encryption gives us the peace of mind that our files are secure, whether at rest or in transit. Highly recommend for any business that values data security!"</p>
+                <p class="landing-testimonial-author">Ndemi Otieno, Chief Executive Officer</p>
+            </div>
+            <div class="landing-testimonial-card">
+                <p class="landing-testimonial-text">"We've been using CloudByte for our large file transfers, and it's been flawless. The speed, reliability, and security are unmatched. Plus, the ability to recover files has saved us more than once!"</p>
+                <p class="landing-testimonial-author">Daichi Hamada, University Lecturer</p>
+            </div>
+            <div class="landing-testimonial-card">
+                <p class="landing-testimonial-text">"As a small business, finding a secure file sharing solution that fits our budget was tough. CloudByte offers all the premium features without the premium price tag. It's been a smart investment for us."</p>
+                <p class="landing-testimonial-author">Wanda Strom, Small Business Owner</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="landing-footer">
+        <p>© 2024 CloudByte Collective. All rights reserved.</p>
+        <p>Contact Us: cloudbytecollective@gmail.com</p>
+    </footer>
+</body>
+</html>
+

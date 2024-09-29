@@ -1,0 +1,7 @@
+File from: [uploads/1722320891180-Drive.png]
+
+File to: [public/uploads/shadowalive6242@gmail.com/1722320891180-Drive.png]
+
+Compression algorithm: [pngquant]
+
+Description: Error: Command failed: D:\UOW\Yr 3 Sem 4 (Q3 2024)\CloudByte Collective\V2\node_modules\pngquant-bin\vendor\pngquant.exe --quality=100-100 -o public/uploads/shadowalive6242@gmail.com/1722320891180-Drive.png uploads/1722320891180-Drive.png

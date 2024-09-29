@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title><%= typeof title == "undefined" ? "Home" : title %></title>
+
+        <link rel="stylesheet" href="/public/css/bootstrap.min.css" />
+        <link rel="stylesheet" type="text/css" href="/public/font-awesome-4.7.0/css/font-awesome.min.css" />
+    </head>
+
+    <body>
+
+        <input type="hidden" id="base-url" value="" />
+
+        <%
+            mainURL = request.mainURL;
+        %>
+
+        <script>
+            var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const baseUrl = document.getElementById("base-url").value;
+        </script>
+
+        <%
+
+            months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+            formatBytes = function(bytes, decimals = 2) {
+                if (bytes === 0) return '0 Bytes';
+
+                const k = 1024;
+                const dm = decimals < 0 ? 0 : decimals;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            };
+
+            getFolderSize = function(arr) {
+                var sum = 0;
+                for (var a = 0; a < arr.length; a++) {
+                    if (arr[a].type == "folder") {
+                        if (arr[a].files.length > 0) {
+                            sum += getFolderSize(arr[a].files);
+                        }
+                    } else {
+                        sum += arr[a].size;
+                    }
+                }
+                return sum;
+            };
+
+            getFullDateInFormat = function (timestamp) {
+                const dateObj = new Date(timestamp);
+                const date = dateObj.getDate();
+                const month = months[dateObj.getMonth() - 1];
+                const year = dateObj.getFullYear();
+
+                return month + " " + date + ", " + year;
+            };
+
+            getDateInFormat = function (timestamp) {
+                const dateObj = new Date(timestamp);
+                const date = dateObj.getDate();
+                const month = months[dateObj.getMonth() - 1];
+                const year = dateObj.getFullYear();
+
+                return month.substring(0, 3) + " " + date + ", " + year;
+            };
+        %>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="sidebar">
+                <a class="navbar-brand" href="/">CloudByte</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/MyUploads">Uploads<span class="sr-only">(current)</span></a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" href="/SharedWithMe">Shared with me</a>
+                        </li>
+
+                        <% if (request.isLogin) { %>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <%= request.session.user.name %>
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="/TrashCan">Trash Can</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="/Logout">Log out</a>
+                                </div>
+                            </li>
+                        <% } else { %>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Login">Login</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Register">Register</a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>    
+                <!-- search field -->
+                <form class="form-inline my-2 my-lg-0" method="GET" action="/Search">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" name="search" value="<%= request.query.search %>" />
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form>
+        </nav>
